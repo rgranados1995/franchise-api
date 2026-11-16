@@ -8,6 +8,7 @@ plugins {
 ext {
     jackson2Version = '2.23.0'
     jackson3Version = '3.3.0'
+    minimumCoverageRatio = 0.90
 }
 
 allprojects {
@@ -28,5 +29,26 @@ subprojects {
     // Remove once it has been updated in Spring Boot
     ext['jackson-2-bom.version'] = rootProject.jackson2Version
     ext['jackson-bom.version'] = rootProject.jackson3Version
+
+    // Fail the build when a module's line coverage drops below the agreed minimum.
+    // The bootstrap class only starts Spring, so it is left out of the ratio.
+    afterEvaluate {
+        tasks.withType(JacocoCoverageVerification).configureEach {
+            classDirectories.setFrom(files(classDirectories.files.collect {
+                fileTree(dir: it, exclude: ['**/MainApplication.class'])
+            }))
+            violationRules {
+                rule {
+                    limit {
+                        counter = 'LINE'
+                        minimum = rootProject.minimumCoverageRatio
+                    }
+                }
+            }
+        }
+        tasks.named('check') {
+            dependsOn tasks.named('jacocoTestCoverageVerification')
+        }
+    }
 }
 
