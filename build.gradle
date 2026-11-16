@@ -1,0 +1,32 @@
+plugins {
+	id 'co.com.bancolombia.cleanArchitecture'
+	id 'org.springframework.boot' apply false
+    id 'org.sonarqube'
+    id 'info.solidsoft.pitest'
+}
+
+ext {
+    jackson2Version = '2.23.0'
+    jackson3Version = '3.3.0'
+}
+
+allprojects {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+    }
+}
+
+// Force dependency versions to address reported vulnerabilities.
+dependenciesOverride {
+   ensure "com.fasterxml.jackson.core:jackson-core:${jackson2Version}"
+   ensure "tools.jackson.core:jackson-core:${jackson3Version}"
+}
+
+subprojects {
+    // Remove once it has been updated in Spring Boot
+    ext['jackson-2-bom.version'] = rootProject.jackson2Version
+    ext['jackson-bom.version'] = rootProject.jackson3Version
+}
+
